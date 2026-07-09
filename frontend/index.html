@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Header Analyzer</title>
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    // Tema secimini ilk boyamadan once uygula (aninda gorunum degisikligi/FOUC olmasin diye)
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('emailHeaderAnalyzerTheme');
+        if (savedTheme === 'midnight') {
+          document.documentElement.setAttribute('data-theme', 'midnight');
+        }
+      } catch (err) {
+        /* localStorage erisilemezse varsayilan (Cyber Dark) tema ile devam edilir */
+      }
+    })();
+  </script>
+</head>
+<body>
+  <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Tema Degistir"></button>
+
+  <div class="app">
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-mark"></span>
+        <h1>Email Header Analyzer</h1>
+      </div>
+      <p class="tagline">E-posta header'larini analiz edin, sahtecilik ve spam risklerini tespit edin.</p>
+    </header>
+
+    <main>
+      <!-- Girdi bolumu -->
+      <section class="card input-card">
+        <label for="headerInput">Email Header</label>
+        <textarea
+          id="headerInput"
+          placeholder="Ham email header metnini buraya yapistirin (ornek: Received, From, Subject, Authentication-Results...)"
+          spellcheck="false"
+        ></textarea>
+
+        <div class="input-actions">
+          <button id="analyzeBtn" class="btn btn-primary">Analiz Et</button>
+          <button id="clearBtn" class="btn btn-secondary">Temizle</button>
+        </div>
+
+        <div id="errorBox" class="error-box hidden" role="alert"></div>
+      </section>
+
+      <!-- Yukleniyor animasyonu -->
+      <section id="loadingSection" class="loading-section hidden">
+        <div class="spinner"></div>
+        <p>Header analiz ediliyor, lutfen bekleyin...</p>
+      </section>
+
+      <!-- Sonuclar -->
+      <section id="resultsSection" class="results-section hidden">
+
+        <!-- Disa aktarma araclari -->
+        <div class="results-toolbar">
+          <button id="exportJsonBtn" class="btn btn-secondary">JSON Olarak Indir</button>
+          <button id="exportPdfBtn" class="btn btn-secondary">PDF Olarak Indir</button>
+        </div>
+
+        <!-- Risk Skoru -->
+        <div class="card risk-card">
+          <h2>Risk Skoru</h2>
+          <div class="risk-display">
+            <div class="risk-score-circle" id="riskScoreCircle">
+              <span id="riskScoreValue">0</span>
+            </div>
+            <div class="risk-info">
+              <div class="risk-label-badge" id="riskLabelBadge">-</div>
+              <div class="risk-bar-track">
+                <div class="risk-bar-fill" id="riskBarFill"></div>
+              </div>
+            </div>
+          </div>
+          <ul class="risk-breakdown" id="riskBreakdown"></ul>
+        </div>
+
+        <div class="grid-2">
+          <!-- Header Alanlari -->
+          <div class="card">
+            <h2>Header Bilgileri</h2>
+            <table class="fields-table" id="fieldsTable"></table>
+          </div>
+
+          <!-- Kimlik Dogrulama -->
+          <div class="card">
+            <h2>Kimlik Dogrulama</h2>
+            <div class="auth-grid" id="authGrid"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Gonderen IP -->
+          <div class="card">
+            <h2>Gonderen IP Bilgisi</h2>
+            <table class="fields-table" id="ipTable"></table>
+          </div>
+
+          <!-- AbuseIPDB -->
+          <div class="card">
+            <h2>AbuseIPDB</h2>
+            <table class="fields-table" id="abuseTable"></table>
+          </div>
+        </div>
+
+        <!-- Received Satirlari -->
+        <div class="card">
+          <h2>Received Satirlari (Sirasiyla)</h2>
+          <ol class="received-list" id="receivedList"></ol>
+        </div>
+      </section>
+
+      <!-- Analiz Gecmisi -->
+      <section class="card history-card">
+        <div class="history-header">
+          <h2>Analiz Gecmisi</h2>
+          <button id="clearHistoryBtn" class="btn btn-danger">Gecmisi Temizle</button>
+        </div>
+        <div class="history-table-wrap">
+          <table class="history-table" id="historyTable">
+            <thead>
+              <tr>
+                <th>Tarih/Saat</th>
+                <th>Subject</th>
+                <th>From</th>
+                <th>Sender IP</th>
+                <th>Risk Score</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+        <p id="historyEmptyMessage" class="field-empty hidden">Henuz kaydedilmis analiz gecmisi yok.</p>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Email Header Analyzer &mdash; Security Analysis Tool</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
